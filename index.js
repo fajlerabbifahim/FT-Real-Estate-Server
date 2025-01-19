@@ -34,6 +34,21 @@ async function run() {
     // await client.connect();
     // // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
+
+    const propertiesCollection = client
+      .db("FT-Real-EstateDB")
+      .collection("properties");
+
+    // get all properties
+    app.get("/properties", async (req, res) => {
+      try {
+        const result = await propertiesCollection.find().toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: "Failed to fetch properties", error });
+      }
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
