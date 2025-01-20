@@ -39,6 +39,17 @@ async function run() {
       .db("FT-Real-EstateDB")
       .collection("properties");
 
+    //wishlist collection
+    const wishlistCollection = client
+      .db("FT-Real-EstateDB")
+      .collection("wishlist");
+
+    //reviews collection
+
+    const reviewCollection = client
+      .db("FT-Real-EstateDB")
+      .collection("reviews");
+
     // get all properties
     app.get("/properties", async (req, res) => {
       try {
@@ -60,6 +71,39 @@ async function run() {
         res.send(property);
       } catch (error) {
         res.status(500).send({ message: "Failed to fetch properties", error });
+      }
+    });
+
+    // save wishlist on data base
+
+    app.post("/wishlist", async (req, res) => {
+      const data = req.body;
+      const result = await wishlistCollection.insertOne(data);
+
+      res.send(result);
+    });
+
+    //save reviews on data base
+
+    app.post("/reviews", async (req, res) => {
+      const data = req.body;
+      const result = await reviewCollection.insertOne(data);
+      res.send(result);
+    });
+
+    // get reviews data
+
+    app.get("/reviews", async (req, res) => {
+      const propertyId = req.query.propertyId;
+
+      try {
+        const review = await reviewCollection
+          .find({ propertyId: propertyId })
+          .toArray();
+
+        res.send(review);
+      } catch (error) {
+        res.status(500).send({ error: "Failed to fetch reviews" });
       }
     });
 
