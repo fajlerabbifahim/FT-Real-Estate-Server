@@ -50,6 +50,10 @@ async function run() {
       .db("FT-Real-EstateDB")
       .collection("reviews");
 
+    //user collection
+
+    const userCollection = client.db("FT-Real-EstateDB").collection("users");
+
     // get all properties
     app.get("/properties", async (req, res) => {
       try {
@@ -105,6 +109,14 @@ async function run() {
       } catch (error) {
         res.status(500).send({ error: "Failed to fetch reviews" });
       }
+    });
+
+    //save user to the database
+
+    app.post("/user", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
     });
 
     console.log(
