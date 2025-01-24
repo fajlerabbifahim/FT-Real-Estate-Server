@@ -98,6 +98,16 @@ async function run() {
       res.send(wishlist);
     });
 
+    // delete wishlist
+
+    app.delete("/wishlist/:id", async (req, res) => {
+      const id = req.params.id;
+      const deleteWish = wishlistCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
+      res.send(deleteWish);
+    });
+
     //save reviews on data base
 
     app.post("/reviews", async (req, res) => {
