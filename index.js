@@ -87,6 +87,17 @@ async function run() {
       res.send(result);
     });
 
+    //get wishlist from database
+
+    app.get("/wishlist/:email", async (req, res) => {
+      const email = req.params.email;
+      const wishlist = await wishlistCollection
+        .find({ addWishList: email })
+        .toArray();
+
+      res.send(wishlist);
+    });
+
     //save reviews on data base
 
     app.post("/reviews", async (req, res) => {
