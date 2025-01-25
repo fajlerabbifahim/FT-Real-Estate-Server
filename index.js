@@ -87,7 +87,7 @@ async function run() {
       res.send(result);
     });
 
-    //get wishlist from database
+    //get wishlist from database by email
 
     app.get("/wishlist/:email", async (req, res) => {
       const email = req.params.email;
@@ -98,11 +98,22 @@ async function run() {
       res.send(wishlist);
     });
 
+    //get a wishlist a database by id
+    app.get("/dashboard/makeOffer/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await wishlistCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      console.log("make offer", result);
+
+      res.send(result);
+    });
+
     // delete wishlist
 
     app.delete("/wishlist/:id", async (req, res) => {
       const id = req.params.id;
-      const deleteWish = wishlistCollection.deleteOne({
+      const deleteWish = await wishlistCollection.deleteOne({
         _id: new ObjectId(id),
       });
       res.send(deleteWish);
