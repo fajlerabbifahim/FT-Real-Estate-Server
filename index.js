@@ -195,8 +195,14 @@ async function run() {
       if (existingUser) {
         return { message: "user already exist" };
       }
-
       const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    //get all user
+
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
       res.send(result);
     });
 
