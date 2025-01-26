@@ -206,6 +206,14 @@ async function run() {
       res.send(result);
     });
 
+    //get user by logged email
+
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email: email });
+      res.send(result);
+    });
+
     //delete a user
 
     app.delete("/user/:id", async (req, res) => {
