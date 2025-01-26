@@ -168,6 +168,16 @@ async function run() {
       }
     });
 
+    //get user by email
+
+    app.get("/reviews/:email", async (req, res) => {
+      const email = req.params.email;
+      const reviews = await reviewCollection
+        .find({ reviewerEmail: email })
+        .toArray();
+      res.send(reviews);
+    });
+
     //save user to the database
 
     app.post("/user", async (req, res) => {
