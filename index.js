@@ -50,6 +50,12 @@ async function run() {
       .db("FT-Real-EstateDB")
       .collection("reviews");
 
+    //   makeOffer collection
+
+    const makeOfferCollection = client
+      .db("FT-Real-EstateDB")
+      .collection("makeOffers");
+
     //user collection
 
     const userCollection = client.db("FT-Real-EstateDB").collection("users");
@@ -98,13 +104,22 @@ async function run() {
       res.send(wishlist);
     });
 
-    //get a wishlist a database by id
+    //get make offer data from wishlist database by id
     app.get("/dashboard/makeOffer/:id", async (req, res) => {
       const id = req.params.id;
       const result = await wishlistCollection.findOne({
         _id: new ObjectId(id),
       });
-      console.log("make offer", result);
+
+      res.send(result);
+    });
+
+    //post a make offered data to the database
+
+    app.post("/makeOffer", async (req, res) => {
+      const data = req.body;
+      const result = await makeOfferCollection.insertOne(data);
+      console.log("make offer save database data", result);
 
       res.send(result);
     });
