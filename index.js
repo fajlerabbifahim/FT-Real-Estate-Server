@@ -206,6 +206,25 @@ async function run() {
       res.send(result);
     });
 
+    //delete a user
+
+    app.delete("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await userCollection.deleteOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    //update user
+    app.put("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedUser = req.body;
+      const result = await userCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedUser }
+      );
+      res.send(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
