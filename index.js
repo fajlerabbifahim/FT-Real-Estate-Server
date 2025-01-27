@@ -60,6 +60,14 @@ async function run() {
 
     const userCollection = client.db("FT-Real-EstateDB").collection("users");
 
+    // ******************
+
+    app.post("/property", async (req, res) => {
+      const property = req.body;
+      const result = await propertiesCollection.insertOne(property);
+      res.send(result);
+    });
+
     // get all properties
     app.get("/properties", async (req, res) => {
       try {
