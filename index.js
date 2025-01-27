@@ -62,6 +62,7 @@ async function run() {
 
     // ******************
 
+    // add a  property
     app.post("/property", async (req, res) => {
       const property = req.body;
       const result = await propertiesCollection.insertOne(property);
@@ -76,6 +77,16 @@ async function run() {
       } catch (error) {
         res.status(500).send({ message: "Failed to fetch properties", error });
       }
+    });
+
+    //get property added by agent
+
+    app.get("/myAddedProperty/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await propertiesCollection
+        .find({ agentEmail: email })
+        .toArray();
+      res.send(result);
     });
 
     //get a single data by id
