@@ -69,14 +69,39 @@ async function run() {
       res.send(result);
     });
 
-    // get all properties
+    // get all verified properties
     app.get("/properties", async (req, res) => {
+      try {
+        const result = await propertiesCollection
+          .find({ verificationStatus: "verified" })
+          .toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: "Failed to fetch properties", error });
+      }
+    });
+
+    //get all properties
+
+    app.get("/allProperties", async (req, res) => {
       try {
         const result = await propertiesCollection.find().toArray();
         res.send(result);
       } catch (error) {
         res.status(500).send({ message: "Failed to fetch properties", error });
       }
+    });
+
+    //property status update
+
+    app.put("/property/:id", async (req, res) => {
+      const id = req.params.id;
+      const statusData = req.body;
+      const result = await propertiesCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: statusData }
+      );
+      res.send(result);
     });
 
     //get property added by agent
@@ -171,7 +196,7 @@ async function run() {
       res.send(result);
     });
 
-    // get reviews data
+    // get reviews by property id for property
 
     app.get("/reviews", async (req, res) => {
       const propertyId = req.query.propertyId;
@@ -187,6 +212,13 @@ async function run() {
       }
     });
 
+    //get all review
+
+    app.get("/allReviews", async (req, res) => {
+      const result = await reviewCollection.find().toArray();
+      res.send(result);
+    });
+
     //delete a review
 
     app.delete("/reviews/:id", async (req, res) => {
@@ -195,7 +227,7 @@ async function run() {
       res.send(result);
     });
 
-    //get user by email
+    //get reviews by email
 
     app.get("/reviews/:email", async (req, res) => {
       const email = req.params.email;
