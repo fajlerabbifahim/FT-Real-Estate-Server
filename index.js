@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -7,8 +8,25 @@ const port = process.env.PORT || 5000;
 // middleware
 
 app.use(cors());
-
 app.use(express.json());
+
+const verifyToken = (req, res, next) => {
+  console.log("inside the verify token", req.headers.authorization);
+
+  if (!req.headers.authorization) {
+    return res.status(401).send({ message: "Forbidden Access" });
+  }
+
+  const token = req.headers.authorization.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "Forbidden Access" });
+    }
+    res.decoded = decoded;
+
+    next();
+  });
+};
 
 // mongoDB
 
@@ -62,15 +80,25 @@ async function run() {
 
     // ******************
 
+    // jwt related apis
+
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "7d",
+      });
+      res.send({ token });
+    });
+
     // add a  property
-    app.post("/property", async (req, res) => {
+    app.post("/property", verifyToken, async (req, res) => {
       const property = req.body;
       const result = await propertiesCollection.insertOne(property);
       res.send(result);
     });
 
     // get all verified properties
-    app.get("/properties", async (req, res) => {
+    app.get("/properties", verifyToken, async (req, res) => {
       try {
         const result = await propertiesCollection
           .find({ verificationStatus: "verified" })
@@ -94,7 +122,7 @@ async function run() {
 
     //property status update
 
-    app.put("/property/:id", async (req, res) => {
+    app.put("/property/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const statusData = req.body;
       const result = await propertiesCollection.updateOne(
@@ -106,7 +134,7 @@ async function run() {
 
     //get property added by agent
 
-    app.get("/myAddedProperty/:email", async (req, res) => {
+    app.get("/myAddedProperty/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const result = await propertiesCollection
         .find({ agentEmail: email })
@@ -116,7 +144,7 @@ async function run() {
 
     //get a single data by id
 
-    app.get("/propertyDetails/:id", async (req, res) => {
+    app.get("/propertyDetails/:id", verifyToken, async (req, res) => {
       try {
         const id = req.params.id;
         const property = await propertiesCollection.findOne({
@@ -130,7 +158,7 @@ async function run() {
 
     // save wishlist on data base
 
-    app.post("/wishlist", async (req, res) => {
+    app.post("/wishlist", verifyToken, async (req, res) => {
       const data = req.body;
       const result = await wishlistCollection.insertOne(data);
 
@@ -139,7 +167,7 @@ async function run() {
 
     //get wishlist from database by email
 
-    app.get("/wishlist/:email", async (req, res) => {
+    app.get("/wishlist/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const wishlist = await wishlistCollection
         .find({ addWishList: email })
@@ -149,7 +177,7 @@ async function run() {
     });
 
     //get make offer data from wishlist database by id
-    app.get("/dashboard/makeOffer/:id", async (req, res) => {
+    app.get("/dashboard/makeOffer/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await wishlistCollection.findOne({
         _id: new ObjectId(id),
@@ -160,7 +188,7 @@ async function run() {
 
     //post a make offered data to the database
 
-    app.post("/makeOffer", async (req, res) => {
+    app.post("/makeOffer", verifyToken, async (req, res) => {
       const data = req.body;
       const result = await makeOfferCollection.insertOne(data);
       console.log("make offer save database data", result);
@@ -170,7 +198,7 @@ async function run() {
 
     //get make offer data for property bought by added user with email
 
-    app.get("/propertyBought/:email", async (req, res) => {
+    app.get("/propertyBought/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const result = await makeOfferCollection
         .find({ buyerEmail: email })
@@ -180,14 +208,14 @@ async function run() {
 
     // get all make offer data
 
-    app.get("/requestedProperty", async (req, res) => {
+    app.get("/requestedProperty", verifyToken, async (req, res) => {
       const result = await makeOfferCollection.find().toArray();
       res.send(result);
     });
 
     // make offer status change function
 
-    app.put("/requestedProperty/:id", async (req, res) => {
+    app.put("/requestedProperty/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const updateStatus = req.body;
       const updateResult = await makeOfferCollection.updateOne(
@@ -211,7 +239,7 @@ async function run() {
 
     // delete wishlist
 
-    app.delete("/wishlist/:id", async (req, res) => {
+    app.delete("/wishlist/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const deleteWish = await wishlistCollection.deleteOne({
         _id: new ObjectId(id),
@@ -221,7 +249,7 @@ async function run() {
 
     //save reviews on data base
 
-    app.post("/reviews", async (req, res) => {
+    app.post("/reviews", verifyToken, async (req, res) => {
       const data = req.body;
       const result = await reviewCollection.insertOne(data);
       res.send(result);
@@ -229,7 +257,7 @@ async function run() {
 
     // get reviews by property id for property
 
-    app.get("/reviews", async (req, res) => {
+    app.get("/reviews", verifyToken, async (req, res) => {
       const propertyId = req.query.propertyId;
 
       try {
@@ -245,14 +273,14 @@ async function run() {
 
     //get all review
 
-    app.get("/allReviews", async (req, res) => {
+    app.get("/allReviews", verifyToken, async (req, res) => {
       const result = await reviewCollection.find().toArray();
       res.send(result);
     });
 
     //delete a review
 
-    app.delete("/reviews/:id", async (req, res) => {
+    app.delete("/reviews/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = reviewCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
@@ -260,7 +288,7 @@ async function run() {
 
     //get reviews by email
 
-    app.get("/reviews/:email", async (req, res) => {
+    app.get("/reviews/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const reviews = await reviewCollection
         .find({ reviewerEmail: email })
@@ -270,7 +298,7 @@ async function run() {
 
     //save user to the database
 
-    app.post("/user", async (req, res) => {
+    app.post("/user", verifyToken, async (req, res) => {
       const user = req.body;
       const email = user.email;
       const existingUser = await userCollection.findOne({ email: email });
@@ -283,14 +311,14 @@ async function run() {
 
     //get all user
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
     //get user by logged email
 
-    app.get("/user/:email", async (req, res) => {
+    app.get("/user/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const result = await userCollection.findOne({ email: email });
       res.send(result);
@@ -298,14 +326,14 @@ async function run() {
 
     //delete a user
 
-    app.delete("/user/:id", async (req, res) => {
+    app.delete("/user/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await userCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
     //update user
-    app.put("/user/:id", async (req, res) => {
+    app.put("/user/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const updatedUser = req.body;
       const result = await userCollection.updateOne(
