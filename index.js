@@ -178,6 +178,37 @@ async function run() {
       res.send(result);
     });
 
+    // get all make offer data
+
+    app.get("/requestedProperty", async (req, res) => {
+      const result = await makeOfferCollection.find().toArray();
+      res.send(result);
+    });
+
+    // make offer status change function
+
+    app.put("/requestedProperty/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateStatus = req.body;
+      const updateResult = await makeOfferCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updateStatus }
+      );
+
+      const rejectResult = await makeOfferCollection.updateMany(
+        {
+          _id: { $ne: new ObjectId(id) },
+          propertyTitle: updateStatus.propertyTitle,
+        },
+        { $set: { status: "reject" } }
+      );
+      res.send({
+        message: "Offer accepted and other offers rejected.",
+        acceptedOffer: updateResult,
+        rejectedOffers: rejectResult,
+      });
+    });
+
     // delete wishlist
 
     app.delete("/wishlist/:id", async (req, res) => {
