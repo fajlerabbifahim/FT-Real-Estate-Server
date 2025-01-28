@@ -98,7 +98,7 @@ async function run() {
     });
 
     // get all verified properties
-    app.get("/properties", verifyToken, async (req, res) => {
+    app.get("/properties", async (req, res) => {
       try {
         const result = await propertiesCollection
           .find({ verificationStatus: "verified" })
@@ -111,7 +111,7 @@ async function run() {
 
     //get all properties
 
-    app.get("/allProperties", async (req, res) => {
+    app.get("/allProperties", verifyToken, async (req, res) => {
       try {
         const result = await propertiesCollection.find().toArray();
         res.send(result);
@@ -167,7 +167,7 @@ async function run() {
 
     //get wishlist from database by email
 
-    app.get("/wishlist/:email", verifyToken, async (req, res) => {
+    app.get("/wishlist/:email", async (req, res) => {
       const email = req.params.email;
       const wishlist = await wishlistCollection
         .find({ addWishList: email })
@@ -298,7 +298,7 @@ async function run() {
 
     //save user to the database
 
-    app.post("/user", verifyToken, async (req, res) => {
+    app.post("/user", async (req, res) => {
       const user = req.body;
       const email = user.email;
       const existingUser = await userCollection.findOne({ email: email });
