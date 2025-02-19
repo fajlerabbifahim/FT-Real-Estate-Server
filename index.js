@@ -144,7 +144,7 @@ async function run() {
 
     //get a single data by id
 
-    app.get("/propertyDetails/:id", verifyToken, async (req, res) => {
+    app.get("/propertyDetails/:id", async (req, res) => {
       try {
         const id = req.params.id;
         const property = await propertiesCollection.findOne({
